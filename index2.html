@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Selective Print Example</title>
+  <style>
+    .div1 {
+      background-color: lightblue;
+      padding: 10px;
+      margin: 10px;
+    }
+    .div2 {
+      background-color: lightgreen;
+      padding: 10px;
+      margin: 10px;
+    }
+    .div3 {
+      background-color: lightcoral;
+      padding: 10px;
+      margin: 10px;
+    }
+    .div4 {
+      background-color: lightgoldenrodyellow;
+      padding: 10px;
+      margin: 10px;
+    }
+    .div5 {
+      background-color: lightpink;
+      padding: 10px;
+      margin: 10px;
+    }
+
+    @media print {
+      body.print-mode * {
+        display: none !important;
+      }
+
+      /* Only show the element to print */
+      body.print-mode .printable,
+      body.print-mode .printable *,
+      body.print-mode .visible-ancestor {
+        display: revert !important;
+      }
+    }
+  </style>
+
+  <script>
+    function printSpecific(selector) {
+      // Clean up any previous print classes
+      document.querySelectorAll('.printable, .visible-ancestor').forEach(el =>
+        el.classList.remove('printable', 'visible-ancestor')
+      );
+
+      const selected = document.querySelector(selector);
+      if (!selected) return;
+
+      // Add printable class to selected
+      selected.classList.add('printable');
+
+      // Add visible-ancestor to all parents up to <body>
+      let parent = selected.parentElement;
+      while (parent && parent !== document.body) {
+        parent.classList.add('visible-ancestor');
+        parent = parent.parentElement;
+      }
+
+      // Add print mode class
+      document.body.classList.add('print-mode');
+
+      // Cleanup after printing
+      const cleanup = () => {
+        document.body.classList.remove('print-mode');
+        document.querySelectorAll('.printable, .visible-ancestor').forEach(el =>
+          el.classList.remove('printable', 'visible-ancestor')
+        );
+        window.removeEventListener('afterprint', cleanup);
+      };
+
+      window.addEventListener('afterprint', cleanup);
+
+      // Trigger print
+      window.print();
+    }
+  </script>
+</head>
+<body>
+  <button onclick="printSpecific('#printonlyme')">Print Only #printonlyme</button>
+  <button onclick="printSpecific('.div1')">Print Div 1</button>
+  <button onclick="printSpecific('.div2')">Print Div 2</button>
+  <button onclick="printSpecific('.div3')">Print Div 3</button>
+  <button onclick="printSpecific('.div4')">Print Div 4</button>
+  <button onclick="printSpecific('.div5')">Print Div 5</button>
+  <div class="div1">
+    <p>ONE - 1 - Lorem ipsum dolor sit amet...</p>
+  </div>
+  <div class="div2">
+    <p>TWO - 2 - Ut enim ad minim veniam...</p>
+  </div>
+  <div class="div3">
+    <p>THREE - 3 - This should NOT be printed.</p>
+    <div id="printonlyme">
+      ✅ This is the ONLY content that should appear in print.
+    </div>
+  </div>
+  <div class="div4">
+    <p>FOUR - 4 - Excepteur sint occaecat...</p>
+  </div>
+  <div class="div5">
+    <p>FIVE - 5 - Curabitur pretium tincidunt lacus...</p>
+  </div>
+</body>
+</html>
